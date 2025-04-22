@@ -1,0 +1,38 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/expense-mgmt-db?createDatabaseIfNotExist=true
+    username: root
+    password: Admin@123
+    driver: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: softforgedata@gmail.com
+    password: njizbwqxtfmlkxnh
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+superAdminRole: ROLE_SUPERADMIN
+superAdminUserName: superadmin
+security:
+  secret:
+    key: b6c3f84de79d5e7e7a7a3d92c6f903c8fc2e127f02fd3e59d5e9a7d3489c420fcb3b8fdc1e75ab47e7a92364fa0c6e785ad4f2e32f4c69856b39f83f9bafc67c
+    tokenExpirationInMins: 60
+notification:
+  email:
+    enabled: true
+  sms:
+    enabled: false
+  whatsapp:
+    enabled: false
+  push:
+    enabled: false
