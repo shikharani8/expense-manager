@@ -11,8 +11,8 @@
 	<groupId>com.sfd</groupId>
 	<artifactId>expense-management</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>expense-management</name>
-	<description>expense-management project</description>
+	<name>expenseCategory-management</name>
+	<description>expenseCategory-management project</description>
 	<url/>
 	<licenses>
 		<license/>

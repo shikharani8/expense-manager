@@ -29,6 +29,7 @@ public class User implements UserDetails {
 
     @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     private Set<Role> roles = new HashSet<>();
+
     private boolean emailNotificationEnabled;
     private boolean smsNotificationEnabled;
     private boolean pushNotificationEnabled;

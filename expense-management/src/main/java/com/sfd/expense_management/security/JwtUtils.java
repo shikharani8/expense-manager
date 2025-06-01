@@ -41,7 +41,7 @@ public class JwtUtils {
                 throw new InvalidCredentialsException("Provided Token is not valid", HttpStatus.UNAUTHORIZED.value());
             }
         }catch(Exception ex){
-            throw new InvalidCredentialsException("Could not validate Json web Town", HttpStatus.UNAUTHORIZED.value());
+            throw new InvalidCredentialsException("Could not validate Json web Token", HttpStatus.UNAUTHORIZED.value());
         }
     }
 

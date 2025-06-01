@@ -4,6 +4,7 @@ import com.sfd.expense_management.notifications.NotificationException;
 import com.sfd.expense_management.role.RoleException;
 import com.sfd.expense_management.security.InvalidCredentialsException;
 import com.sfd.expense_management.user.UserException;
+import com.sfd.expense_management.expenseCategory.ExpenseCategoryException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -35,4 +36,12 @@ public class CustomExceptionHandler {
         return ResponseEntity.status(notificationException.getErrorCode())
                 .body(GenericExceptionResponse.builder().withMessage(notificationException.getMessage()).build());
     }
+
+    @ExceptionHandler(ExpenseCategoryException.class)
+    public ResponseEntity<GenericExceptionResponse> handleException(ExpenseCategoryException expenseCategoryException){
+        return ResponseEntity.status(expenseCategoryException.getErrorCode())
+                .body(GenericExceptionResponse.builder().withMessage(expenseCategoryException.getMessage()).build());
+    }
 }
+
+

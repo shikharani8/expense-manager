@@ -4,11 +4,9 @@ import com.sfd.expense_management.auth.otp.OTP;
 import com.sfd.expense_management.auth.otp.OTPHelper;
 import com.sfd.expense_management.auth.otp.OtpPurpose;
 import com.sfd.expense_management.auth.otp.OtpService;
-import com.sfd.expense_management.notifications.NotificationService;
-import com.sfd.expense_management.notifications.NotificationType;
+import com.sfd.expense_management.notifications.EmailNotificationSender;
 import com.sfd.expense_management.notifications.dto.NotificationDto;
 import com.sfd.expense_management.role.Role;
-import com.sfd.expense_management.role.RoleRepository;
 import com.sfd.expense_management.user.dtos.ChangePasswordRequestPayload;
 import com.sfd.expense_management.user.dtos.ForgetPasswordPayload;
 import com.sfd.expense_management.user.dtos.ResetPasswordPayload;
@@ -32,9 +30,8 @@ import java.util.*;
 public class UserServiceImpl implements UserService{
     private final UserRepository userRepository;
     private final UserHelper userHelper;
-    private final RoleRepository roleRepository;
+    private final EmailNotificationSender emailNotificationSender;
     private final PasswordEncoder passwordEncoder;
-    private final NotificationService notificationService;
     private final OtpService otpService;
     private final OTPHelper otpHelper;
 
@@ -80,13 +77,14 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public User getUserById(Long id) {
-        return userRepository.findById(id).orElseThrow(()->new UserException("User doesn't exist!", HttpStatus.NOT_FOUND.value()));
+        return userRepository.findById(id)
+                .orElseThrow(()->new UserException("User doesn't exist!", HttpStatus.NOT_FOUND.value()));
     }
     @Override
     public User update(Long id, UserCreatePayload userCreatePayload) {
         User user = getUserById(id);
         userHelper.updateUser(user, userCreatePayload);
-        return user;
+        return userRepository.save(user);
     }
 
     @Override
@@ -155,19 +153,18 @@ public class UserServiceImpl implements UserService{
     @Override
     public String sendForgetPasswordOtp(ForgetPasswordPayload forgetPasswordPayload) {
         try{
-            User loggedInUser = UserHelper.getLoggedInUser();
             deleteExistingOtpIfExist(forgetPasswordPayload);
             NotificationDto notificationDto = new NotificationDto();
             notificationDto.setSentFrom(senderEmail);
             notificationDto.setSentTo(forgetPasswordPayload.getEmail());
             notificationDto.setSubject("Forget password");
             Map<String, String> model = new HashMap<>();
-            model.put("username", loggedInUser.getUsername());
+            model.put("username", forgetPasswordPayload.getUsername());
             String otpValue = otpHelper.otpGenerator();
             model.put("otp", otpValue);
             model.put("emailTemplate", "forgetPassword.vm");
-            notificationService.sendNotification(notificationDto, NotificationType.EMAIL, model);
-            saveOtp(otpValue, loggedInUser.getUsername());
+            emailNotificationSender.sendEmail(notificationDto, model);
+            saveOtp(otpValue, forgetPasswordPayload.getUsername());
             return "OTP sent to your email!";
         }catch(Exception ex){
             log.warn("Unable to send email- {}", ex.getMessage());

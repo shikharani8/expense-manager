@@ -3,23 +3,20 @@ package com.sfd.expense_management.initializer;
 import com.sfd.expense_management.role.Role;
 import com.sfd.expense_management.role.RoleService;
 import com.sfd.expense_management.role.dtos.RoleRequestPayload;
+import com.sfd.expense_management.society.Society;
+import com.sfd.expense_management.society.SocietyService;
 import com.sfd.expense_management.user.User;
-import com.sfd.expense_management.user.UserException;
 import com.sfd.expense_management.user.UserService;
-import com.sfd.expense_management.user.dtos.UserCreatePayload;
+import com.sfd.expense_management.expenseCategory.ExpenseCategory;
+import com.sfd.expense_management.expenseCategory.ExpenseCategoryService;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Component
 @Slf4j
@@ -30,6 +27,10 @@ public class InitialData {
     private UserService userService;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private ExpenseCategoryService expenseCategoryService;
+    @Autowired
+    private SocietyService societyService;
     @Value("${superAdminRole}")
     private String roleName;
     @Value("${superAdminUserName}")
@@ -39,6 +40,8 @@ public class InitialData {
     private void createInitialData(){
         createRole();
         createUser();
+        createExpenseCategory();
+        createSociety();
     }
 
     private void createRole(){
@@ -56,7 +59,7 @@ public class InitialData {
         roleSet.add(roleService.getRoleByName(roleName));
         List<User> userList = userService.getUserList();
         Optional<User> existingUser = userList.stream().filter(user->superAdminUserName.equals(user.getUsername())).findFirst();
-        if(!existingUser.isPresent()){
+        if(existingUser.isEmpty()){
             User user = new User();
             user.setUsername("superadmin");
             user.setPassword(passwordEncoder.encode("superadmin"));
@@ -70,5 +73,37 @@ public class InitialData {
         }else{
             log.warn("User already exist!");
         }
+    }
+
+    public void createExpenseCategory(){
+        List<ExpenseCategory> expenseCategoryList = List.of(
+                new ExpenseCategory("Sanitation", true),
+                new ExpenseCategory("Guard_Salary", true),
+                new ExpenseCategory("Garbage_Collection", true),
+                new ExpenseCategory("Electric_Equipment", true),
+                new ExpenseCategory("Miscellaneous", true));
+
+        List<ExpenseCategory> existingList = expenseCategoryService.getAll();
+        List<String> expenseNameList = existingList.stream().map(ExpenseCategory::getName).toList();
+        expenseCategoryList.stream()
+                .filter(expense-> !expenseNameList.contains(expense.getName()))
+                .forEach(expense->  expenseCategoryService.create(expense));
+    }
+
+    public void createSociety(){
+        String societyName = "Vrindavan Garden";
+        List<Society> societyList= societyService.getAll();
+        Optional<Society> existingSociety = societyList.stream().filter(society -> societyName.equals(society.getName())).findFirst();
+        if(!existingSociety.isPresent()){
+            Society society = new Society();
+            society.setName(societyName);
+            Role role = roleService.getRoleByName(roleName);
+            Optional<User> superAdmin = userService.getUserList().stream().filter(user->superAdminUserName.equals(user.getUsername())).findFirst();
+            superAdmin.ifPresent(society::setSuperAdmin);
+            societyService.create(society);
+        }else{
+            log.warn("Society already exist!");
+        }
+
     }
 }
