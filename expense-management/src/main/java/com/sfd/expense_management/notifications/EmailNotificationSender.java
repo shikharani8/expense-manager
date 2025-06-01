@@ -3,6 +3,7 @@ package com.sfd.expense_management.notifications;
 import com.sfd.expense_management.notifications.dto.NotificationDto;
 import com.sfd.expense_management.user.User;
 import com.sfd.expense_management.user.UserHelper;
+import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,21 +32,25 @@ public class EmailNotificationSender implements NotificationSender {
             if(!loggedInUser.isEmailNotificationEnabled()){
                 throw new NotificationException("User email preference is Off, please On it for sending Emails", HttpStatus.BAD_REQUEST.value());
             }
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(message);
-            Map<String, Object> valueMap = new HashMap<>();
-            valueMap.put("username", model.get("username"));
-            valueMap.put("otp", model.get("otp"));
-            VelocityContext velocityContext = new VelocityContext(valueMap);
-            StringWriter stringWriter = new StringWriter();
-            velocityEngine.mergeTemplate("templates/" + model.get("emailTemplate"), "UTF-8", velocityContext, stringWriter);
-            mimeMessageHelper.setFrom(notificationDto.getSentFrom());
-            mimeMessageHelper.setTo(notificationDto.getSentTo());
-            mimeMessageHelper.setSubject(notificationDto.getSubject());
-            mimeMessageHelper.setText(stringWriter.toString(), true);
-            mailSender.send(message);
+            sendEmail(notificationDto, model);
         }catch(Exception ex){
-            throw new RuntimeException(ex);
+            throw new NotificationException(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
         }
+    }
+
+    public void sendEmail(NotificationDto notificationDto, Map<String, String> model) throws MessagingException {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(message);
+        Map<String, Object> valueMap = new HashMap<>();
+        valueMap.put("username", model.get("username"));
+        valueMap.put("otp", model.get("otp"));
+        VelocityContext velocityContext = new VelocityContext(valueMap);
+        StringWriter stringWriter = new StringWriter();
+        velocityEngine.mergeTemplate("templates/" + model.get("emailTemplate"), "UTF-8", velocityContext, stringWriter);
+        mimeMessageHelper.setFrom(notificationDto.getSentFrom());
+        mimeMessageHelper.setTo(notificationDto.getSentTo());
+        mimeMessageHelper.setSubject(notificationDto.getSubject());
+        mimeMessageHelper.setText(stringWriter.toString(), true);
+        mailSender.send(message);
     }
 }

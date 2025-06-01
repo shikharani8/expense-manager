@@ -58,15 +58,4 @@ public class UserController {
                                                 @RequestBody Map<String, Boolean> newValues){
         return ResponseEntity.ok(userService.updateNotificationSettings(username, newValues));
     }
-
-    @GetMapping("/sendForgetPasswordOtp")
-    public ResponseEntity<String> sendForgetPasswordOtp(@RequestBody ForgetPasswordPayload forgetPasswordPayload){
-        return ResponseEntity.ok(userService.sendForgetPasswordOtp(forgetPasswordPayload));
-    }
-
-    @GetMapping("/resetPassword")
-    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordPayload resetPasswordPayload){
-        return ResponseEntity.ok(userService.resetPassword(resetPasswordPayload));
-    }
-
 }
